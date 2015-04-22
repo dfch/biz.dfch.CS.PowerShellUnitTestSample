@@ -1,6 +1,6 @@
 # biz.dfch.CS.PowerShellUnitTestSample
 
-This Visual Studio .NET/C# project shows you how to use [Microsoft.VisualStudio.TestTools.UnitTesting](https://msdn.microsoft.com/en-us/library/microsoft.visualstudio.testtools.unittesting.aspx) tools.
+This Visual Studio .NET/C# project shows you how to use [Microsoft.VisualStudio.TestTools.UnitTesting](https://msdn.microsoft.com/en-us/library/microsoft.visualstudio.testtools.unittesting.aspx) tools for unit testing of PowerShell code.
 
 You can write a simple [TestMethod](https://msdn.microsoft.com/en-us/library/microsoft.visualstudio.testtools.unittesting.testmethodattribute.aspx) like this that tests the addition of two numbers via PowerShell (rather advanced ...):
 
