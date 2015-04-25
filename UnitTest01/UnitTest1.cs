@@ -295,17 +295,19 @@ namespace biz.dfch.CS.PowerShellUnitTestSample
             var fn = String.Format("{0}:{1}.{2}", this.GetType().Namespace, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             Trace.WriteLine(fn);
 
+            var msg = "hello, world!";
             PowerShell ps = PowerShell.Create();
             ps.Commands.Clear();
             ps
-                .AddScript("function Write-Host {}")
+                .AddScript("function Write-Host($Object) { return $Object; }")
                 .Invoke();
             var results = ps
                 .AddCommand("Write-Host")
-                .AddParameter("Object", "hello, world!")
+                .AddParameter("Object", msg)
                 .Invoke();
             Assert.IsNotNull(results);
-            Assert.AreEqual(0, results.Count);
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(msg, results[0]);
         }
 
         [TestMethod]
