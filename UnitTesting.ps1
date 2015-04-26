@@ -140,8 +140,8 @@ BEGIN
 			$CurrentBlock = $_MyInvocation.MyCommand.ScriptBlock.Ast.$BlockName;
 			foreach($Statement in $CurrentBlock.Statements)
 			{
-				$Extend = $Statement.Extent.ToString();
-				if([String]::IsNullOrWhiteSpace($Statement.Name) -Or $Extend -inotmatch ('function\W+(?<name>{0})' -f $Statement.Name))
+				$Extent = $Statement.Extent.ToString();
+				if([String]::IsNullOrWhiteSpace($Statement.Name) -Or $Extent -inotmatch ('function\W+(?<name>{0})' -f $Statement.Name))
 				{
 					continue;
 				}
