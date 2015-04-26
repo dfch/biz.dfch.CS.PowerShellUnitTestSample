@@ -131,7 +131,7 @@ BEGIN
 		testCleanup;
 	}
 
-	function getTestMethods()
+	function getTestMethods($_MyInvocation)
 	{
 		$OutputParameter = @();
 		# foreach($BlockName in @("BeginBlock", "ProcessBlock", "EndBlock"))
@@ -214,7 +214,7 @@ $Command =
 
 # A "DivideByZeroException" is expected, and is thrown. 
 # This will cause the test to succeed.
-function doDivide1ThrowsDivideByZeroException()
+function doDivideThrowsDivideByZeroException()
 {
 
 $Command = 
@@ -236,7 +236,7 @@ $Command =
 
 # A "DivideByZeroException" is expected, but it not thrown. 
 # This will cause the test to fail.
-function doDivide2ThrowsDivideByZeroException()
+function doExceptionNotThrownThrowsDivideByZeroException()
 {
 
 $Command = 
@@ -257,7 +257,7 @@ $Command =
 
 # A "DivideByZeroException2" is expected, but it is not thrown. 
 # This will cause the test to fail.
-function doDivide2ThrowsDivideByZeroException2()
+function doWrongExceptionThrowsInvalidException()
 {
 
 $Command = 
@@ -278,7 +278,7 @@ $Command =
 
 try 
 {
-	$aTestMethods = getTestMethods;
+	$aTestMethods = getTestMethods($_MyInvocation);
 	if($PSCmdlet.ParameterSetName -eq 'list') 
 	{
 		$OutputParameter = aTestMethods;
