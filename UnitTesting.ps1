@@ -21,6 +21,12 @@ Param
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[Switch]
 	$ListAvailable = $true
+	,
+	[ValidateScript( { Test-Path($_) -PathType Leaf; } )]
+	[ValidateNotNullOrEmpty()]
+	[Parameter(Mandatory = $false)]
+	[String]
+	$Path = "${ENV:ProgramFiles(x86)}\Microsoft Visual Studio 12.0\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll"
 )
 
 BEGIN
@@ -34,7 +40,7 @@ BEGIN
 	function Configure()
 	{
 		# Write-Host "Configure";
-		Add-Type -Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll";
+		Add-Type -Path $Path -ErrorAction:Stop;
 		Set-Variable -Name Assert -Value ([Microsoft.VisualStudio.TestTools.UnitTesting.Assert]) -Scope Script;
 	}
 
@@ -223,15 +229,7 @@ $Command =
 '@
 
 	$results = Invoke-Expression -Command $Command;
-	if($results -is [Array])
-	{
-		$result = $results[0];
-	}
-	else
-	{
-		$result = $results;
-	}
-	$Assert::AreEqual('dHJhbGFsYQ==!', $result);
+
 }
 
 # A "DivideByZeroException" is expected, but it not thrown. 
