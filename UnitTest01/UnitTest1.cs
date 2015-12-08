@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Configuration;
@@ -295,17 +297,19 @@ namespace biz.dfch.CS.PowerShellUnitTestSample
             var fn = String.Format("{0}:{1}.{2}", this.GetType().Namespace, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             Trace.WriteLine(fn);
 
+            var msg = "hello, world!";
             PowerShell ps = PowerShell.Create();
             ps.Commands.Clear();
             ps
-                .AddScript("function Write-Host {}")
+                .AddScript("function Write-Host($Object) { return $Object; }")
                 .Invoke();
             var results = ps
                 .AddCommand("Write-Host")
-                .AddParameter("Object", "hello, world!")
+                .AddParameter("Object", msg)
                 .Invoke();
             Assert.IsNotNull(results);
-            Assert.AreEqual(0, results.Count);
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(msg, results[0]);
         }
 
         [TestMethod]
@@ -365,6 +369,95 @@ namespace biz.dfch.CS.PowerShellUnitTestSample
             }
             Trace.WriteLine("{0}: Running tests COMPLETED.", fn, "");
         }
+
+        // This method is not a TestMethod, but can be invoked from PowerShell to run all TestMethods in this class.
+        public void Run(string name)
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(name));
+
+            var fn = String.Format("{0}:{1}.{2}", this.GetType().Namespace, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+            Trace.WriteLine("{0}: Running tests ...", fn, "");
+            Type type = this.GetType();
+
+            var am = type.GetMethods();
+            Contract.Assert(null != am);
+            foreach (var m in am)
+            {
+                var isTestMethod = false;
+                var expectedException = String.Empty;
+                foreach (var customAttribute in m.CustomAttributes)
+                {
+                    if (customAttribute.ToString().Equals(String.Format("[Microsoft.VisualStudio.TestTools.UnitTesting.{0}()]", "TestMethodAttribute")))
+                    {
+                        isTestMethod = true;
+                    }
+                    if (customAttribute.ToString().StartsWith(String.Format("[Microsoft.VisualStudio.TestTools.UnitTesting.{0}", "ExpectedExceptionAttribute")))
+                    {
+                        expectedException = customAttribute.ConstructorArguments[0].Value.ToString();
+                    }
+                }
+                
+                if (!isTestMethod || System.Reflection.MethodBase.GetCurrentMethod().Name.Equals(m.Name))
+                {
+                    continue;
+                }
+                if (name != m.Name)
+                {
+                    continue;
+
+                }
+
+                Trace.WriteLine("Invoking '{0}' ...", m.Name, "");
+                try
+                {
+                    var result = m.Invoke(this, null);
+                }
+                catch (Exception ex)
+                {
+                    if (null == ex.InnerException || !ex.InnerException.GetType().FullName.Equals(expectedException))
+                    {
+                        throw ex;
+                    }
+                }
+                Trace.WriteLine("Invoking '{0}' SUCCEEDED.", m.Name, "");
+            }
+            Trace.WriteLine("{0}: Running tests COMPLETED.", fn, "");
+        }
+
+        public List<string> GetTestMethods()
+        {
+            var fn = String.Format("{0}:{1}.{2}", this.GetType().Namespace, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+            Trace.WriteLine("{0}: Running tests ...", fn, "");
+            Type type = this.GetType();
+            var am = type.GetMethods();
+
+            var testMethods = new List<string>();
+
+            foreach (var m in am)
+            {
+                var isTestMethod = false;
+                var expectedException = String.Empty;
+                foreach (var customAttribute in m.CustomAttributes)
+                {
+                    if (customAttribute.ToString().Equals(String.Format("[Microsoft.VisualStudio.TestTools.UnitTesting.{0}()]", "TestMethodAttribute")))
+                    {
+                        isTestMethod = true;
+                    }
+                    if (customAttribute.ToString().StartsWith(String.Format("[Microsoft.VisualStudio.TestTools.UnitTesting.{0}", "ExpectedExceptionAttribute")))
+                    {
+                        expectedException = customAttribute.ConstructorArguments[0].Value.ToString();
+                    }
+                }
+                if (!isTestMethod || System.Reflection.MethodBase.GetCurrentMethod().Name.Equals(m.Name))
+                {
+                    continue;
+                }
+
+                testMethods.Add(m.Name);
+            }
+            return testMethods;
+        }
+
         private static String GenerateRandomString(UInt32 size)
         {
             Random _rng = new Random();
